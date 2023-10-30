@@ -4,7 +4,7 @@ import type { NextRequest } from "next/server";
 // This function can be marked `async` if using `await` inside
 export default function authMiddleware(request: NextRequest) {
     // Aqui verificamos que sea un path publico
-    const publicPaths = ["/home", "/login", "/register"];
+    const publicPaths = ["/home", "/login", "/register", "/api/auth/login"];
     const isPublicPath = publicPaths.includes(request.nextUrl.pathname);
     if (isPublicPath) {
         console.log("isPublicPath: ", isPublicPath);
@@ -12,7 +12,7 @@ export default function authMiddleware(request: NextRequest) {
     }
     // Aqui hago mi proceso de verificaion de sesion
     const cookies = request.cookies;
-    console.log("cookies: ", cookies);
+    return NextResponse.next();
 }
 
 // See "Matching Paths" below to learn more

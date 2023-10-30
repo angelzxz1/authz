@@ -2,19 +2,19 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
+import axios, { AxiosError } from "axios";
+import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import {
     Form,
     FormControl,
-    FormDescription,
     FormField,
     FormItem,
     FormLabel,
     FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import axios from "axios";
 
 const formSchema = z.object({
     email: z
@@ -32,6 +32,7 @@ const formSchema = z.object({
 });
 
 const Page = () => {
+    const route = useRouter();
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -41,8 +42,15 @@ const Page = () => {
     });
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         try {
-            await axios.post("/api/auth/login", values);
+            const response = await axios.post("/api/auth/login", values);
+            form.reset();
+            console.log(response);
+            route.push("/");
         } catch (error) {
+            if (axios.isAxiosError(error)) {
+                if (error.response?.status === 404) alert("Email not found");
+                if (error.response?.status === 401) alert("Wrong password");
+            }
             console.log(error);
         }
     };

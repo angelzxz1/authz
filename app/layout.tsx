@@ -26,7 +26,9 @@ export default function RootLayout({
                     disableTransitionOnChange
                 >
                     <NavBar />
-                    {children}
+                    <main className="h-full w-full pt-16 flex justify-center items-center">
+                        {children}
+                    </main>
                 </ThemeProvider>
             </body>
         </html>
