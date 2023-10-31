@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { cookies } from "next/headers"
+import jwt from 'jsonwebtoken'
 
 // This function can be marked `async` if using `await` inside
 export default function authMiddleware(request: NextRequest) {
@@ -11,7 +13,15 @@ export default function authMiddleware(request: NextRequest) {
         return NextResponse.next();
     }
     // Aqui hago mi proceso de verificaion de sesion
-    const cookies = request.cookies;
+    const cookie = cookies()
+    const session = cookie.get('token-authz')
+    if(!session) return NextResponse.redirect(new URL('/login', request.url))
+    
+    const {exp} = jwt.decode(session.value) as {exp:number}
+    if (Date.now() >= exp * 1000){
+        cookie.delete('token-authz')
+        return NextResponse.redirect(new URL('/login', request.url))
+    }
     return NextResponse.next();
 }
 

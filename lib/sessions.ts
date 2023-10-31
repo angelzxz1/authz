@@ -1,41 +1,14 @@
-import jwt from "jsonwebtoken";
-import { db } from "./db";
+import { User } from "@prisma/client"
+import { cookies } from "next/headers"
+import jwt from 'jsonwebtoken'
 
-export const SessionVerifier = (token: string) => {
-    try {
-        const secret = process.env.JWT_SECRET ? process.env.JWT_SECRET : "";
-        const payload = jwt.verify(token, secret);
-    } catch (error) {
-        console.log("Error verifying session: ", error);
-    }
-};
 
-interface SessionCreatorProps {
-    id: number;
-    email: string;
+
+
+const sessionExpired = (user:User)=>{
+    const cookie = cookies()
+    const session = cookie.get(`token-${user.id}`)
+    if(!session) return null
+    const {exp} = jwt.decode(session.value) as {exp:number}
+    return Date.now() >= exp * 1000
 }
-
-export const SessionCreator = async ({ id, email }: SessionCreatorProps) => {
-    try {
-        const secret = process.env.JWT_SECRET ? process.env.JWT_SECRET : "";
-        const token = jwt.sign(
-            {
-                email,
-            },
-            secret,
-            {
-                expiresIn: process.env.JWT_EXPIRES_IN,
-            }
-        );
-        console.log("token: ", token);
-        const session = await db.session.create({
-            data: {
-                userId: id,
-                token: token,
-            },
-        });
-        return session;
-    } catch (error) {
-        console.log("Error creating session: ", error);
-    }
-};

@@ -32,7 +32,7 @@ export async function POST(req: Request) {
             },
         });
         const cookie = cookies();
-        cookie.set(`token-${user.id}`, token, { secure: true });
+        cookie.set('token-authz', token, { secure: true });
         return NextResponse.json(session);
     } catch (error) {
         console.log("ERROR_LOGGING_IN: ", error);
