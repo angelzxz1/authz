@@ -2,20 +2,18 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import bcrypt from "bcryptjs";
-
+import axios from "axios";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
     Form,
     FormControl,
-    FormDescription,
     FormField,
     FormItem,
     FormLabel,
     FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import axios from "axios";
 
 const formSchema = z.object({
     name: z.string().min(5, {
@@ -36,6 +34,7 @@ const formSchema = z.object({
 });
 
 const Page = () => {
+    const router = useRouter();
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -47,7 +46,8 @@ const Page = () => {
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         try {
             const response = await axios.post("/api/auth/register", values);
-            console.log(response);
+            form.reset();
+            router.push("/login");
         } catch (error) {
             console.log(error);
         }

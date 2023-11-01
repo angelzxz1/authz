@@ -20,19 +20,17 @@ export async function POST(req: Request) {
         const jsw_secret: string = process.env.JWT_SECRET
             ? process.env.JWT_SECRET
             : "";
-
         const token = jwt.sign({ id: user.id }, jsw_secret, {
             expiresIn: "1d",
         });
-
-        const session = await db.session.create({
+        let session = await db.session.create({
             data: {
                 token: token,
                 userId: user.id,
             },
         });
         const cookie = cookies();
-        cookie.set('token-authz', token, { secure: true });
+        cookie.set("token-authz", token, { secure: true });
         return NextResponse.json(session);
     } catch (error) {
         console.log("ERROR_LOGGING_IN: ", error);
@@ -40,6 +38,23 @@ export async function POST(req: Request) {
     }
 }
 
-export function GET(req: Request) {
-    return NextResponse.json({ message: "Hello World" });
+export async function DELETE(req: Request) {
+    try {
+        const cookie = cookies();
+        const sessionCookie = cookie.get("token-authz");
+        if (!sessionCookie)
+            return new NextResponse("NO_SESSION_FOUND", { status: 404 });
+        const sessionDelete = await db.session.delete({
+            where: {
+                token: sessionCookie.value,
+            },
+        });
+        if (!sessionDelete)
+            return new NextResponse("SESSION_NOT_FOUND", { status: 404 });
+        cookie.delete("token-authz");
+        return NextResponse.json({ message: "Session deleted" });
+    } catch (error) {
+        console.log("ERROR_LOGGING_OUT: ", error);
+        return new NextResponse("Internal Error", { status: 500 });
+    }
 }

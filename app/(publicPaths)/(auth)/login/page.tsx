@@ -44,8 +44,7 @@ const Page = () => {
         try {
             const response = await axios.post("/api/auth/login", values);
             form.reset();
-            console.log(response);
-            route.push("/");
+            route.refresh();
         } catch (error) {
             if (axios.isAxiosError(error)) {
                 if (error.response?.status === 404) alert("Email not found");
